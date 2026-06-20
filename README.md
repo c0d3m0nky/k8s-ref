@@ -1,5 +1,4 @@
-![ReadMe](images/disclosure-ai-assisted-tedium-github-copilot.svg)
- [^1]
+![ReadMe](images/disclosure-ai-assisted-tedium-github-copilot.svg) [^1]
 
 # k8s-ref
 
