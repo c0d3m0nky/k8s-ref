@@ -1,1 +1,42 @@
 # k8s-ref
+
+This repository contains a collection of Helm charts and other Kubernetes resources that show how I've handled various complex scenarios in a way that cleanly abstracts away the complexities from the users deploying them, while still prioritizing maintainability and best practices.
+
+For background on my perspective and why I've made this beyond just having a reference for scripts, templates, etc. I'm primarily a DotNet developer, and in my time making Helm charts for my applications I've developed techniques for reducing overly verbose application settings into simplified values files for consumers of those charts that have better things to do than understand how Kestral config works, while still allowing for full flexibility if the need arises.
+
+## Getting Started
+
+### Prerequisites
+
+#### NixOS
+
+If you're on NixOS, you can use the provided `shell.nix` to start a shell with the necessary tools:
+
+```bash
+nix-shell
+```
+
+#### Other Operating Systems
+
+Follow instructions in the links below to install the following tools:
+- [Helm](https://helm.sh/docs/intro/install/)
+- [Minikube](https://minikube.sigs.k8s.io/docs/start/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+
+
+### Running Minikube under Docker
+
+`minikube start --driver=docker --ports '<hostHttp>:80' '<hostHttps>:443' --memory=4000 --cpus=4 --addons 'ingress, metrics-server, storage-provisioner, dashboard, default-storageclass'`
+
+## Coming Soon
+
+- My general best practicies for Helm chart design and development
+  - helm-docs
+  - `helm template`
+  - `helm lint`
+  - values.schema.json
+  - Tips & Tricks / Lessons Learned
+- Simplifying complex application configs in Helm charts using DotNet as an example
+- Dynamic application profiles
+- Segregating dev environment resources from publishable resources in Helm charts
+- Helper functions I find useful
