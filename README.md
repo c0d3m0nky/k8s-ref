@@ -15,6 +15,8 @@ For background on my perspective and why I've made this beyond just having a ref
   - [Helm-Docs](basic-helm-chart/README.md#helm-docs)
     - [How To Include `values.yaml` Nodes In Docs](basic-helm-chart/README.md#how-to-include-valuesyaml-nodes-in-docs)
     - [Rendering The Docs](basic-helm-chart/README.md#rendering-the-docs)
+  - [values.yaml](basic-helm-chart/values.yaml)
+  - [My commonly used helper functions](basic-helm-chart/templates/_basicHelmChartHelpers.tpl)
 - [Coming Soon](#coming-soon)
 
 ---
@@ -49,6 +51,7 @@ Follow instructions in the links below to install the following tools:
 
 - My general best practicies for Helm chart design and development
   - helm-docs
+  - Checkov
   - `helm template`
   - `helm lint`
   - values.schema.json
