@@ -1,10 +1,23 @@
-![ReadMe](images/disclosure-ai-assisted-tedium-github-copilot.svg) [^1]
+![ReadMe](images/ai-disclosure-badge.svg) [^1]
 
 # k8s-ref
 
 This repository contains a collection of Helm charts and other Kubernetes resources that show how I've handled various complex scenarios in a way that cleanly abstracts away the complexities from the users deploying them, while still prioritizing maintainability and best practices.
 
 For background on my perspective and why I've made this beyond just having a reference for scripts, templates, etc. I'm primarily a DotNet developer, and in my time making Helm charts for my applications I've developed techniques for reducing overly verbose application settings into simplified values files for consumers of those charts that have better things to do than understand how Kestral config works, while still allowing for full flexibility if the need arises.
+
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Running Minikube under Docker](#running-minikube-under-docker)
+- [basic-helm-chart](basic-helm-chart/README.md)
+  - [Creating Your Helm Chart](basic-helm-chart/README.md#creating-your-helm-chart)
+    - [Helper Functions (Named Templates)](basic-helm-chart/README.md#helper-functions-named-templates)
+  - [Helm-Docs](basic-helm-chart/README.md#helm-docs)
+    - [How To Include `values.yaml` Nodes In Docs](basic-helm-chart/README.md#how-to-include-valuesyaml-nodes-in-docs)
+    - [Rendering The Docs](basic-helm-chart/README.md#rendering-the-docs)
+- [Coming Soon](#coming-soon)
+
+---
 
 ## Getting Started
 

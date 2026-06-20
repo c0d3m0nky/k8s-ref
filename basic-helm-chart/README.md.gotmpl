@@ -22,7 +22,7 @@ Every file under `templates` folder, prefixed with `_`, and having the `tpl` ext
 
 The [helm-docs](https://github.com/norwoodj/helm-docs) project is a tool that automatically generates Markdown documentation for Helm charts from metadata, values, and annotations so documentation can stay consistent and up to date as charts evolve.
 
-It has a default template that will generate a README.md file at the root of the chart, but also supports customizable Go templates. To override the default `README.md` template just create your template named `README.md.gotmpl`, but you can also have it generate multiple markdown files, just name them `YourDocFile.md.gotmpl` and it will generate a markdown file based on that template in the same folder. [More details](https://github.com/norwoodj/helm-docs#user-content-markdown-rendering)
+It has a default template that will generate a README.md file at the root of the chart, but also supports customizable Go templates. To override the default `README.md` template just create your template named `README.md.gotmpl`. [More details](https://github.com/norwoodj/helm-docs#user-content-markdown-rendering)
 
 ## How To Include `values.yaml` Nodes In Docs
 
