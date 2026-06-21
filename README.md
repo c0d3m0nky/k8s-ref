@@ -12,7 +12,7 @@ For background on my perspective and why I've made this beyond just having a ref
 - [basic-helm-chart](basic-helm-chart/README.md)
   - [Creating Your Helm Chart](basic-helm-chart/README.md#creating-your-helm-chart)
     - [Helper Functions (Named Templates)](basic-helm-chart/README.md#helper-functions-named-templates)
-  - [Dev & CI/CD Tooling](basic-helm-chart/README.md#dev--ci-cd-tooling)
+  - [Dev & CI/CD Tooling](basic-helm-chart/README.md#dev--cicd-tooling)
     - [Checkov](basic-helm-chart/README.md#checkov)
     - [Helm Lint](basic-helm-chart/README.md#helm-lint)
     - [Minikube Dashboard](basic-helm-chart/README.md#minikube-dashboard)
