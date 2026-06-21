@@ -1,4 +1,8 @@
-# Creating Your Helm Chart
+# Basic Helm Chart
+
+The structure and contents of this Helm chart is what I consider the bare minimum for production ready charts.
+
+## Creating Your Helm Chart
 
 The `helm` cli tool offers a create command that will layout a set of starter templates and helper functions, you should always start with this no matter how simple the chart will be. [More details](helm.sh/docs/helm/helm_create/)
 
@@ -6,25 +10,129 @@ The `helm` cli tool offers a create command that will layout a set of starter te
 helm create 'my-sweet-new-chart'
 ```
 
-## Helper Functions (Named Templates)
+### Helper Functions (Named Templates)
 
-### The `_helpers.tpl` File
+#### The `_helpers.tpl` File
 
 This file made by `helm create` contains helper functions for sticking to consistent naming and labeling of resources. I recommend you do not touch this file, as at some point you may want to upgrade and teasing out your stuff from what comes baked in would be difficult.
 
-### Making Your Own Helpers
+#### Making Your Own Helpers
 
 Every file under `templates` folder, prefixed with `_`, and having the `tpl` extension, will be processed by the `helm` cli tool when rendering templates, leverage this to keep your helper functions organized and maintainable. [More details](https://helm.sh/docs/chart_template_guide/named_templates/)
 
-[Tips & Tricks/Lessons Learned coming soon]
+## Dev & CI/CD Tooling
 
-# Helm-Docs
+In this section I'm going to cover different tooling for linting, testing, and analysis of charts that can be integrated into your CI/CD pipelines and git commit/merge gates. For standard tooling, your chart should include a `linter_values.yaml` file that has the minimal values set with dummy data for it to pass validation. Some tools will need additional values set though, to improve maintainability and avoid cross contamination, each tool should have its own values file to be merged with the `linter_values.yaml` outside the chart.
 
-The [helm-docs](https://github.com/norwoodj/helm-docs) project is a tool that automatically generates Markdown documentation for Helm charts from metadata, values, and annotations so documentation can stay consistent and up to date as charts evolve.
+### Checkov
+
+[Checkov](https://www.checkov.io/) is a static code analysis tool for infrastructure as code. It can be used to scan your Helm charts for security and compliance issues before deploying them. [More details](https://www.checkov.io/2.Basics/HowToUseCheckov.html#helm-charts)
+
+#### Basic Usage
+
+The command below will run give you a basic run if you just replace `./chart-root-dir`, and `./path-to-checkov-specific-values.yaml` with your appropriate values, but I will go into what each set of arguments does.
+
+```bash
+HELM_NAMESPACE=dummyNamespace checkov --directory "./chart-root-dir" --framework helm \
+  --var-file "./chart-root-dir/linter_values.yaml" --var-file "./path-to-checkov-specific-values.yaml"
+```
+
+- `HELM_NAMESPACE=dummyNamespace` is needed because Checkov expects a namespace to be set when scanning Helm charts, but since we're just doing static analysis and not actually deploying anything we set this to any value so it doesn't flag for missing namespace
+- `--directory "/chart-root-dir"` tells Checkov where the chart is located in the container
+- `--framework helm` tells Checkov to only use the Helm scanning engine
+- `--var-file *` how you pass additional values files, order matters here exactly as it would with any `helm` cli command
+
+My preferred method for running Checkov in my dev environment is in a Docker container
+
+```bash
+docker run --rm --tty \
+  -e HELM_NAMESPACE=dummyNamespace \
+  --volume "./chart-root-dir:/chart" \
+  --volume "./path-to-checkov-specific-values.yaml:/chart_addional/values.checkov.yaml" \
+  --workdir "/chart" \
+  --name "checkov" \
+  bridgecrew/checkov:latest \
+    --directory "/chart" --framework helm \
+    --var-file "/chart/linter_values.yaml" \
+    --var-file "/chart_addional/values.checkov.yaml"
+```
+
+### Helm Lint
+
+[Helm Lint](https://helm.sh/docs/helm/helm_lint/) is a built in command in the `helm` cli tool that performs static analysis to check the chart is well-formed
+
+```bash
+helm lint "./chart-root-dir" -f "./chart-root-dir/linter_values.yaml" --strict
+```
+
+### Minikube Dashboard
+
+Minikube has a built in dashboard that can be used to view the resources in your cluster, and can be a useful tool for debugging and learning. Think of it kind of like the Portainer of the Kubernetes world [More details](https://minikube.sigs.k8s.io/docs/handbook/dashboard/)
+
+The basic `minikube dashboard` command will choose a random available port, so I prefer to use the command below to specify a port so it's always on a consistent URL.
+
+```bash
+minikube dashboard --port <someAvailabelPort> --url
+```
+
+### Accessing Logs
+
+While the Minikube dashboard has a built in logs viewer, when I need to look at raw logsI prefer to use `kubectl logs` in my terminal as it provides more flexibility and readability given virtually all my projects use JSON logs. Also, if you've setup your selectors for it, it's much easier to look at logs from multiple pods at once, the example below uses the `app` label selector to stream logs from all `orchestrator` containers. [More details](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#viewing-logs)
+
+```bash
+kubectl logs -n <namespace> --follow -l app=orchestrator
+```
+
+### Helm Template
+
+The `helm template` command is a built in command in the `helm` cli tool that renders your templates locally and outputs the raw Kubernetes manifests to your terminal. This can be a useful tool for debugging and learning, as it allows you to see exactly what Kubernetes resources will be created when you deploy your chart. [More details](https://helm.sh/docs/helm/helm_template/)
+
+In my opinion `helm template` with it's `--show-only` argument in combination with [yq](https://mikefarah.gitbook.io/yq) and [jq](https://jqlang.org/manual/) cli tools is the most powerful  set of tools when developing complex Helm charts. From troubleshooting template rendering issues in single files, to full organized template dumps to assist in validating major refactors (Check out the scripts directory in the root of this repo for the function `helm-template-split` which does exactly that)
+
+### The `values.schema.json` File
+
+The `values.schema.json` file is a JSON schema file that can be used to validate the values passed to your chart. It's enforced by Helm cli tool and also leveraged by some IDEs and tooling [More details](https://helm.sh/docs/topics/charts/#schema-files)
+
+You can use this to enforce types, valid values, complex structures, and required values. However, I recommend not using the schema for required values as it can often give vague errors. Instead I prefer to rely on usage of `required` function in templates as that is much easier to maintain and clearer messaging to users.
+
+I do not wish having to write these by hand on my greatest enemy, so this is a rare instance where I will sound like an AI evangelist and say that as of this writing Claude Sonnet and Opus models are the absolute best for creating and maintaining these. You do still need to learn and understand the structures and nuances to validate your prompts were applied appropriately though.
+
+#### Prompting For New Schema
+
+When creating a new `values.schema.json` file it helps to be very descriptive in your prompts. Claude is good at inferring from comments in `values.yaml` (especially if you have already setup helm-docs annotations) but it can ignore some, so be descriptive in your initial prompts with anything that:
+
+- Is required
+- Has a specific subset of valid values
+- Doesn't have a default value
+- Maps and lists
+- Whether to include or exclude subcharts
+
+Example:
+
+```markdown
+Make me a `values.schema.json` file for the Helm chart found at `./chart-root-dir` including it's subcharts. Use comments and usage in templates to infer types, requirements, and validation.
+
+Be sure to address the following in the schema:
+- `resources.*` are maps for each deployment type that is put under it's deployment's `spec.template.spec.containers.resources` as is, so it must match that structure.
+- `appSettings.secrets.provider` can be one of `kubernetes` or `aws`
+```
+
+#### Updating An Existing Schema
+
+Do so any time you're committing changes to your values.yaml. The simpler the changes the easier it is to get the right set of changes out of Claude. I primarily use GitHub Copilot in VS Code, and my workflow is:
+
+- Start my initial prompt in `Plan` mode asking something along the lines of `Analyze what's changed in the <chart name> helm chart since commit <sha> for changes needed in the values.schema.json file`
+- Have a "conversation" about it's analysis until I'm confident it's correct
+- Switch to `Agent` mode and tell it to `start implementing`
+- Validate each change to make sure it's correct
+
+## Helm-Docs
+
+The [helm-docs](https://github.com/norwoodj/helm-docs) project is a cli tool that automatically generates Markdown documentation for Helm charts from metadata, values, and annotations so documentation can stay consistent and up to date as charts evolve.
 
 It has a default template that will generate a README.md file at the root of the chart, but also supports customizable Go templates. To override the default `README.md` template just create your template named `README.md.gotmpl`. [More details](https://github.com/norwoodj/helm-docs#user-content-markdown-rendering)
 
-## How To Include `values.yaml` Nodes In Docs
+### How To Include `values.yaml` Nodes In Docs
 
 Start by adding comment lines directly above the nodes you want documented in `values.yaml`. helm-docs reads these comments and uses them as the description column in the generated Values table. [More details](https://github.com/norwoodj/helm-docs#user-content-helm-docs)
 
@@ -39,13 +147,13 @@ service:
 	port: 80
 ```
 
-### The Default Column
+#### The Default Column
 
 I recommend limiting documentation to scalar nodes as that makes your docs more concise, and the automatic defaults will turn map/list nodes into JSON strings that can make the rendered markdown very ugly. If you do want to annotate map/list nodes you can override the text to keep the output clean
 
 ```yaml
-# -- Configures resource requests and limits for the containers
-# @default -- cpu: 10m-500m memory: 256Mi-1Gi
+## -- Configures resource requests and limits for the containers
+## @default -- cpu: 10m-500m memory: 256Mi-1Gi
 resources:
   requests:
     cpu: 10m
@@ -73,7 +181,7 @@ appSettings:
     PostgresContext:
 ```
 
-## Rendering The Docs
+### Rendering The Docs
 
 You a few options for [installation and usage](https://github.com/norwoodj/helm-docs#user-content-installation), but my preferred method is to run it in a Docker container
 
@@ -81,7 +189,7 @@ You a few options for [installation and usage](https://github.com/norwoodj/helm-
 docker run --rm --volume './chart-root-dir:/helm-docs' --name 'helm-docs' --user "$(id -u):$(id -g)" jnorwood/helm-docs:latest --sort-values-order file
 ```
 
-## What This Chart's README.md Would Look Like <small><small><small>(I've interlaced useful info in context)</small></small></small>
+### What This Chart's README.md Would Look Like <small><small><small>(I've interlaced useful info in context)</small></small></small>
 
 ---
 
@@ -89,7 +197,7 @@ docker run --rm --volume './chart-root-dir:/helm-docs' --name 'helm-docs' --user
 
 Value pulled from the `description` field in Chart.yaml.
 
-### Generaal Settings
+#### Generaal Settings
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
@@ -105,8 +213,11 @@ Value pulled from the `description` field in Chart.yaml.
 | podLabels | object |  | Labels to be added to all pods |
 | podSecurityContext | object |  | Sets the security context for all pods. [More details](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
 | securityContext | object |  | Sets the security context for all containers. [More details](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
+| customResources | object | Disabled with no resources | Adhoc Kubernetes resources to be applied during the helm install/upgrade. This is not only super useful for DevOps tooling that your chart doesn't need to be concerned about, but can also be used for added tooling in dev environments without running the risk of accidentally making it to prod |
+| customResources.enabled | bool | `false` | Whether to render custom resources |
+| customResources.resources | object |  | Map of name to Kubernetes manifest objects |
 
-### Application Settings
+#### Application Settings
 
 An introduction to the settings and details of some of the nuances that are tough to convey in a simple table with snippet explanations. Generally I'm able to just say something like `If there's no default value then it is required unless otherwise noted`. For when that hasn't been the best option I have been able to make custom properties for helm-docs that I will show in another sample chart for more advanced techniques.
 

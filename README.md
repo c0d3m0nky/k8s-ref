@@ -12,6 +12,13 @@ For background on my perspective and why I've made this beyond just having a ref
 - [basic-helm-chart](basic-helm-chart/README.md)
   - [Creating Your Helm Chart](basic-helm-chart/README.md#creating-your-helm-chart)
     - [Helper Functions (Named Templates)](basic-helm-chart/README.md#helper-functions-named-templates)
+  - [Dev & CI/CD Tooling](basic-helm-chart/README.md#dev--ci-cd-tooling)
+    - [Checkov](basic-helm-chart/README.md#checkov)
+    - [Helm Lint](basic-helm-chart/README.md#helm-lint)
+    - [Minikube Dashboard](basic-helm-chart/README.md#minikube-dashboard)
+    - [Accessing Logs](basic-helm-chart/README.md#accessing-logs)
+    - [Helm Template](basic-helm-chart/README.md#helm-template)
+    - [Chart Schema](basic-helm-chart/README.md#the-valueschemajson-file)
   - [Helm-Docs](basic-helm-chart/README.md#helm-docs)
     - [How To Include `values.yaml` Nodes In Docs](basic-helm-chart/README.md#how-to-include-valuesyaml-nodes-in-docs)
     - [Rendering The Docs](basic-helm-chart/README.md#rendering-the-docs)
@@ -50,16 +57,13 @@ Follow instructions in the links below to install the following tools:
 ## Coming Soon
 
 - My general best practicies for Helm chart design and development
-  - helm-docs
-  - Checkov
-  - `helm template`
-  - `helm lint`
-  - values.schema.json
-  - Tips & Tricks / Lessons Learned
+  - Update helm-docs annotations to be more about why something is an essential part of the chart rather than just what it is
+  - checkovSkipChecks
 - Simplifying complex application configs in Helm charts using DotNet as an example
 - Dynamic application profiles
 - Segregating dev environment resources from publishable resources in Helm charts
 - Helper functions I find useful
+- Useful AI prompts for analyzing and improving charts
 
 ---
 
