@@ -1,0 +1,6 @@
+{{- if .Values.customResources.enabled }}
+  {{- range $name, $value := .Values.customResources.resources }}
+---
+{{ toYaml $value }}
+  {{- end }}
+{{- end }}
